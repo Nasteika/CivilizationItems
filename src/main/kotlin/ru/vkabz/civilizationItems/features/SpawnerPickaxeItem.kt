@@ -24,14 +24,14 @@ object SpawnerPickaxeItem : Listener {
     fun createItem(): ItemStack {
         val item = ItemStack(Material.WOODEN_PICKAXE)
         val meta = item.itemMeta!!
-        meta.setDisplayName("§6Кирка 'Шанс бога'")
+        meta.setDisplayName("§6Кирка 'Спавнеро-дробилка'")
         meta.lore = listOf(
             "§7Позволяет добывать спавнеры",
             "§7Шанс выпадения спавнера: §a20%",
             "§7Шанс получить яйцо призыва: §a50%"
         )
         meta.addEnchant(Enchantment.UNBREAKING, 1, true)
-        meta.addEnchant(Enchantment.EFFICIENCY, 10, true)
+        meta.addEnchant(Enchantment.EFFICIENCY, 7, true)
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS)
         item.itemMeta = meta
         return item
@@ -45,9 +45,11 @@ object SpawnerPickaxeItem : Listener {
 
         if (block.type != Material.SPAWNER) return
         if (itemInHand.type != Material.WOODEN_PICKAXE) return
-        if (itemInHand.itemMeta?.displayName != "§6Кирка 'спавнеро-дробилка'") return
+        if (itemInHand.itemMeta?.displayName != "§6Кирка 'Спавнеро-дробилка'") return
 
-        // Проверка: блок реально сломан
+        // ✅ Получаем тип существа ДО удаления блока
+        val entityType = (block.state as? CreatureSpawner)?.spawnedType
+
         Bukkit.getScheduler().runTaskLater(JavaPlugin.getProvidingPlugin(this::class.java), Runnable {
             if (block.type != Material.AIR) return@Runnable
 
@@ -62,21 +64,16 @@ object SpawnerPickaxeItem : Listener {
                 player.sendMessage("§aВам выпал спавнер!")
 
                 val dropEgg = Random.nextDouble() <= eggDropChance
-                val entityType = (block.state as? CreatureSpawner)?.spawnedType
 
-                if (dropEgg) {
-                    if (entityType != null) {
-                        val eggMaterial = Material.getMaterial("${entityType.name}_SPAWN_EGG")
-                        if (eggMaterial != null) {
-                            val egg = ItemStack(eggMaterial)
-                            block.world.dropItemNaturally(block.location, egg)
-                            player.sendMessage("§eВам выпало яйцо призыва!")
-                        } else {
-                            player.sendMessage("§eЯйцо не выдалось — не удалось определить тип.")
-                        }
-                    } else {
-                        player.sendMessage("§eЯйцо не выдалось — спавнер был пустым.")
+                if (dropEgg && entityType != null) {
+                    val eggMaterial = Material.getMaterial("${entityType.name}_SPAWN_EGG")
+                    if (eggMaterial != null) {
+                        val egg = ItemStack(eggMaterial)
+                        block.world.dropItemNaturally(block.location, egg)
+                        player.sendMessage("§eВам выпало яйцо призыва!")
                     }
+                } else if (dropEgg) {
+                    player.sendMessage("§eЯйцо не выдалось — спавнер был пустым.")
                 }
 
                 // Эффекты
