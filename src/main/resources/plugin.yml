@@ -1,0 +1,17 @@
+name: CivilizationItems
+version: '1.0-SNAPSHOT'
+main: ru.vkabz.civilizationItems.CivilizationItems
+api-version: '1.20'
+depend: [WorldEdit, WorldGuard, ProtocolLib]
+commands:
+  giveitem:
+    description: Выдает игрокам уникальные предметы.
+    usage: /giveitem <игрок> <предмет>
+    aliases: [gi]
+    permission: civilizationitems.giveitem
+
+permissions:
+  # Основные права
+  civilizationitems:
+    description: Позволяет использовать команду /giveitem
+    default: op
